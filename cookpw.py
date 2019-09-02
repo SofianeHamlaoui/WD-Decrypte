@@ -4,6 +4,7 @@ from __future__ import print_function
 import sys
 import argparse
 import codecs
+import getpass
 
 def wdc(password):
     password = "WDC." + password
@@ -37,7 +38,7 @@ def generate_password(password, cook_method, cmd):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("passwd", type=str)
+    parser.add_argument("passwd", type=str, nargs='?')
     parser.add_argument("--hdparm", action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--unset", action="store_true")
@@ -51,6 +52,10 @@ def main():
         method = hdparm
     else:
         method = wdc
+        if args.passwd == None:
+            passwd = getpass.getpass('My Book password: ')
+        else:
+            passwd = args.passwd
 
     if args.unset:
         # sg_raw -s 72 -i OUTPUT_FILE DEVICE c1 e2 00 00 00 00 00 00 48 00
@@ -62,7 +67,7 @@ def main():
         # sg_raw -s 40 -i OUTPUT_FILE DEVICE c1 e1 00 00 00 00 00 00 28 00
         cmd = 'unlock'
 
-    password = generate_password(args.passwd, method, cmd)
+    password = generate_password(passwd, method, cmd)
 
     out = getattr(sys.stdout, 'buffer', sys.stdout)
     out.write(password)
